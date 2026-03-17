@@ -1,6 +1,7 @@
 {
   "name": "software-kitchen-ticketer",
   "version": "1.0.0",
+  "type": "commonjs",
   "description": "pulls tickets from jira and prints them out on label printer for me to work on",
   "main": "software-kitchen-ticketer.js",
   "scripts": {

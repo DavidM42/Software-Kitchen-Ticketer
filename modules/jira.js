@@ -1,10 +1,27 @@
 const axios = require("axios");
-const { JIRA_BASE_URL, JIRA_EMAIL, JIRA_KEY } = require("../config");
+const {
+  JIRA_BASE_URL,
+  JIRA_EMAIL,
+  JIRA_KEY,
+  JQL_VERSIONS,
+} = require("../config");
 
 const auth = {
   username: JIRA_EMAIL,
   password: JIRA_KEY,
 };
+
+function buildJql() {
+  let jql = 'issuetype != "Sub-task"';
+  if (JQL_VERSIONS) {
+    const versions = JQL_VERSIONS.split(",")
+      .map((v) => `"${v.trim()}"`)
+      .join(", ");
+    jql += ` AND fixVersion IN (${versions})`;
+  }
+  jql += " ORDER BY created DESC";
+  return jql;
+}
 
 async function getBoardId(boardName) {
   try {
@@ -22,13 +39,14 @@ async function getBoardId(boardName) {
 
 async function getNewestIssue(boardId) {
   try {
+    const jql = buildJql();
     const response = await axios.get(
       `${JIRA_BASE_URL}/rest/agile/1.0/board/${boardId}/issue`,
       {
         auth,
         params: {
           maxResults: 50,
-          jql: 'issuetype != "Sub-task" ORDER BY created DESC',
+          jql,
         },
       },
     );
@@ -40,7 +58,7 @@ async function getNewestIssue(boardId) {
         auth,
         params: {
           maxResults: 50,
-          jql: 'issuetype != "Sub-task" ORDER BY created DESC',
+          jql,
         },
       },
     );
