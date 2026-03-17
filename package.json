@@ -1,0 +1,17 @@
+{
+  "name": "software-kitchen-ticketer",
+  "version": "1.0.0",
+  "description": "pulls tickets from jira and prints them out on label printer for me to work on",
+  "main": "software-kitchen-ticketer.js",
+  "scripts": {
+    "script": "node software-kitchen-ticketer.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.13.6",
+    "dotenv": "^17.3.1"
+  },
+  "devDependencies": {}
+}
