@@ -13,6 +13,38 @@ const WORK_HOUR_END = 17; // 5 PM
 
 let lastPrintedIssueKey = loadLastPrintedIssueKey();
 
+function stripMarkup(text) {
+  return (
+    text
+      // Jira wiki: image attachments !image.png! or !image.png|thumbnail!
+      .replace(/![^!|]+(\|[^!]*)?\!/g, "")
+      // Jira wiki: headings h1. h2. etc.
+      .replace(/^h[1-6]\.\s*/gm, "")
+      // Jira wiki: named links [text|url] -> text
+      .replace(/\[([^\]|]+)\|[^\]]+\]/g, "$1")
+      // Jira wiki: plain links [url]
+      .replace(/\[[^\]]+\]/g, "")
+      // Jira wiki: {code}, {noformat}, {panel}, {quote} blocks
+      .replace(/\{[^}]+\}/g, "")
+      // Jira wiki: bold *text*, italic _text_, strikethrough -text-
+      .replace(/([*_])(.*?)\1/g, "$2")
+      // HTML tags
+      .replace(/<[^>]*>/g, " ")
+      // HTML entities
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      // Collapse horizontal whitespace only (preserve newlines)
+      .replace(/[^\S\n]+/g, " ")
+      // Collapse more than 2 consecutive newlines
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  );
+}
+
 function isWithinWorkingHours() {
   const now = new Date();
   const hour = now.getHours();
@@ -49,9 +81,9 @@ async function checkAndPrint(boardId) {
     return;
   }
 
-  let ticketInfo = `${formatDate(issue.fields.created)} ${getLineFeed(1)} (${issue.fields.issuetype.name}) ${issue.key}: ${issue.fields.summary}`;
+  let ticketInfo = `${formatDate(issue.fields.created)}${getLineFeed(1)}${issue.key} (${issue.fields.issuetype.name})${getLineFeed(1)}${stripMarkup(issue.fields.summary)}`;
   if (issue.fields.description && issue.fields.description.trim().length > 0) {
-    ticketInfo += `${getLineFeed(2)} ${issue.fields.description}`;
+    ticketInfo += `${getLineFeed(2)}${stripMarkup(issue.fields.description)}`;
   }
 
   console.log(`[${formatDate()}] Printing new ticket: ${issue.key}`);
